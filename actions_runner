@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -e
+
+if [ $# -ne 3 ]; then
+	echo "Usage: $0 <number_of_users> <token_to_runner>"
+	exit 1
+fi
+
+count=$1
+token=$2 # YOUTOKEN1234567890
+#url="https://github.com/your/repository"
+
+for ((i=1; i<=count; i++))
+do
+    username="pipeline-github-runner-$i"
+
+    useradd --comment '$username' --create-home $username --shell /bin/bash
+
+    mkdir -p /home/$username/actions-runner
+
+    cd /home/$username/actions-runner
+
+    curl -o actions-runner-linux-x64-2.304.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.304.0/actions-runner-linux-x64-2.304.0.tar.gz
+    tar xzf ./actions-runner-linux-x64-2.304.0.tar.gz
+
+    chown -R $username:$username /home/$username/actions-runner
+
+    export RUNNER_ALLOW_RUNASROOT=1
+    ./config.sh --runnergroup Default --name pipeline-runner-$i --labels docker --work _work --url https://github.com/your/repository --token $token
+
+    chown -R $username:$username /home/$username/actions-runner
+
+    ./svc.sh install $username
+    service actions.runner.your-repository.pipeline-runner-$i start
+    usermod -aG docker $username
+done
