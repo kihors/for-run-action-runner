@@ -2,7 +2,7 @@
 
 set -e
 
-if [ $# -ne 3 ]; then
+if [ $# -ne 2 ]; then
 	echo "Usage: $0 <number_of_users> <token_to_runner>"
 	exit 1
 fi
@@ -35,3 +35,5 @@ do
     service actions.runner.your-repository.pipeline-runner-$i start
     usermod -aG docker $username
 done
+
+echo -e "Done \033[32m\xE2\x9C\x93\033[0m"
